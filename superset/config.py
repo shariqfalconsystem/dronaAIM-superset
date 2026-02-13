@@ -729,7 +729,7 @@ DEFAULT_FEATURE_FLAGS: dict[str, bool] = {
     # Enable embedded Superset functionality
     # @lifecycle: stable
     # @category: runtime_config
-    "EMBEDDED_SUPERSET": False,
+    "EMBEDDED_SUPERSET": True,  # ⚠️ CHANGED TO True FOR IFRAME EMBEDDING
     # Enable Jinja templating in SQL queries
     # @lifecycle: stable
     # @category: runtime_config
@@ -1136,15 +1136,25 @@ EXPLORE_FORM_DATA_CACHE_CONFIG: CacheConfig = {
 # store cache keys by datasource UID (via CacheKey) for custom processing/invalidation
 STORE_CACHE_KEYS_IN_METADATA_DB = False
 
+# ⚠️ UPDATED FOR IFRAME EMBEDDING - CORS Configuration
 # CORS Options
 # NOTE: enabling this requires installing the cors-related python dependencies
 # `pip install .[cors]` or `pip install apache_superset[cors]`, depending
 ENABLE_CORS = True
 CORS_OPTIONS: dict[Any, Any] = {
+    # ⚠️ ADD YOUR EMBEDDING DOMAINS HERE
+    # For local development, you can use "*" but NEVER in production!
     "origins": [
+        "http://localhost:3000",  # Your React/Next.js app
+        "http://localhost:8080",  # Superset itself
+        "http://localhost:8088",  # Alternative Superset port
+        "http://localhost:5173",
         "https://tile.openstreetmap.org",
         "https://tile.osm.ch",
-    ]
+        # Add your production domain(s) here:
+        # "https://yourdomain.com",
+    ],
+    "supports_credentials": True,  # Important for cookies/auth
 }
 
 # Sanitizes the HTML content used in markdowns to allow its rendering in a safe manner.
@@ -1661,7 +1671,7 @@ TRACKING_URL_TRANSFORMER = lambda url: url  # noqa: E731
 DB_POLL_INTERVAL_SECONDS: dict[str, int] = {}
 
 # Interval between consecutive polls when using Presto Engine
-# See here: https://github.com/dropbox/PyHive/blob/8eb0aeab8ca300f3024655419b93dad926c1a351/pyhive/presto.py#L93  # noqa: E501
+# See here: https://github.com/dropbox/PyHive/blob/8eb0aeab8ca300f3024655419b93dad926c1351/pyhive/presto.py#L93  # noqa: E501
 PRESTO_POLL_INTERVAL = int(timedelta(seconds=1).total_seconds())
 
 # Allow list of custom authentications for each DB engine.
@@ -2104,6 +2114,7 @@ CONTENT_SECURITY_POLICY_WARNING = True
 # Do you want Talisman enabled?
 TALISMAN_ENABLED = utils.cast_to_boolean(os.environ.get("TALISMAN_ENABLED", True))
 
+# ⚠️ UPDATED FOR IFRAME EMBEDDING - Talisman Configuration
 # If you want Talisman, how do you want it configured??
 # For more information on setting up Talisman, please refer to
 # https://superset.apache.org/docs/configuration/networking-settings/#changing-flask-talisman-csp
@@ -2142,11 +2153,23 @@ TALISMAN_CONFIG = {
             *[f"https://{d}" for d in THEME_FONT_URL_ALLOWED_DOMAINS],
         ],
         "script-src": ["'self'", "'strict-dynamic'"],
+        # ⚠️ CRITICAL: frame-ancestors allows iframe embedding
+        "frame-ancestors": [
+            "'self'",
+            "http://localhost:3000",  # Your React/Next.js app
+            "http://localhost:8080",  # Alternative local port
+            "http://localhost:8088",  # Alternative local port
+            "http://localhost:5173",
+            # Add your production domain(s) here:
+            # "https://yourdomain.com",
+        ],
+        "frame-src": ["'self'"], 
     },
     "content_security_policy_nonce_in": ["script-src"],
-    "force_https": False,
-    "session_cookie_secure": False,
+    "force_https": False,  # Set to True in production
+    "session_cookie_secure": False,  # Set to True in production with HTTPS
 }
+
 # React requires `eval` to work correctly in dev mode
 TALISMAN_DEV_CONFIG = {
     "content_security_policy": {
@@ -2182,12 +2205,22 @@ TALISMAN_DEV_CONFIG = {
             *[f"https://{d}" for d in THEME_FONT_URL_ALLOWED_DOMAINS],
         ],
         "script-src": ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+        # ⚠️ CRITICAL: frame-ancestors for dev mode
+        "frame-ancestors": [
+            "'self'",
+            "http://localhost:3000",
+            "http://localhost:8080",
+            "http://localhost:8088",
+            "http://localhost:5173",
+        ],
+        "frame-src": ["'self'"], 
     },
     "content_security_policy_nonce_in": ["script-src"],
     "force_https": False,
     "session_cookie_secure": False,
 }
 
+# ⚠️ UPDATED FOR IFRAME EMBEDDING - Session Cookie Configuration
 #
 # Flask session cookie options
 #
@@ -2195,8 +2228,8 @@ TALISMAN_DEV_CONFIG = {
 # for details
 #
 SESSION_COOKIE_HTTPONLY = True  # Prevent cookie from being read by frontend JS?
-SESSION_COOKIE_SECURE = False  # Prevent cookie from being transmitted over non-tls?
-SESSION_COOKIE_SAMESITE: Literal["None", "Lax", "Strict"] | None = "Lax"
+SESSION_COOKIE_SECURE = False  # Set to True in production with HTTPS
+SESSION_COOKIE_SAMESITE: Literal["None", "Lax", "Strict"] | None = None  # ⚠️ Changed from "Lax" to None for iframe embedding
 # Whether to use server side sessions from flask-session or Flask secure cookies
 SESSION_SERVER_SIDE = False
 # Example config using Redis as the backend for server side sessions
@@ -2266,7 +2299,7 @@ GLOBAL_ASYNC_QUERIES_JWT_COOKIE_SAMESITE: None | (Literal["None", "Lax", "Strict
     None
 )
 GLOBAL_ASYNC_QUERIES_JWT_COOKIE_DOMAIN = None
-GLOBAL_ASYNC_QUERIES_JWT_SECRET = "test-secret-change-me"  # noqa: S105
+GLOBAL_ASYNC_QUERIES_JWT_SECRET = "test-secret-change-me"  # ⚠️ CHANGE THIS IN PRODUCTION  # noqa: S105
 GLOBAL_ASYNC_QUERIES_TRANSPORT: Literal["polling", "ws"] = "polling"
 GLOBAL_ASYNC_QUERIES_POLLING_DELAY = int(
     timedelta(milliseconds=500).total_seconds() * 1000
@@ -2294,9 +2327,10 @@ GLOBAL_ASYNC_QUERIES_CACHE_BACKEND = {
     "CACHE_REDIS_SSL_CA_CERTS": None,
 }
 
+# ⚠️ UPDATED FOR IFRAME EMBEDDING - Guest Token Configuration
 # Embedded config options
 GUEST_ROLE_NAME = "Public"
-GUEST_TOKEN_JWT_SECRET = "test-guest-secret-change-me"  # noqa: S105
+GUEST_TOKEN_JWT_SECRET = "your-super-secret-jwt-key-change-me-in-production"  # ⚠️ CHANGE THIS!  # noqa: S105
 GUEST_TOKEN_JWT_ALGO = "HS256"  # noqa: S105
 GUEST_TOKEN_HEADER_NAME = "X-GuestToken"  # noqa: S105
 GUEST_TOKEN_JWT_EXP_SECONDS = 300  # 5 minutes
