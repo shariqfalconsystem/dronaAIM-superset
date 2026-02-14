@@ -1,0 +1,12 @@
+# Git ignore for root repository
+/superset-frontend/node_modules/
+/superset/venv/
+/superset/superset-frontend/node_modules/
+/superset/superset-frontend/.temp_cache/
+.temp_cache/
+node_modules/
+venv/
+*.log
+.DS_Store
+.env
+.ipynb_checkpoints/
