@@ -48,10 +48,7 @@ export SUPERSET_CONFIG_PATH=$(pwd)/superset/superset_config.py
 # 2. Upgrade the database schema
 superset db upgrade
 
-# 3. Create your Admin user
-superset fab create-admin
-
-# 4. Finalize permissions and roles
+# 3. Finalize permissions and roles
 superset init
 ```
 
