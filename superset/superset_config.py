@@ -26,7 +26,7 @@ SECRET_KEY = os.getenv(
 # SQLALCHEMY_DATABASE_URI = 'sqlite:////home/sabya/.superset/superset.db'
 
 # Global Postgres connection for metadata
-SQLALCHEMY_DATABASE_URI = "postgresql+psycopg2://superset_user:StrongPassword123@52.202.251.212:5432/superset_metadata"
+SQLALCHEMY_DATABASE_URI = "postgresql+psycopg2://testuser:testpass@52.202.251.212:5432/testdb"
 # SQLALCHEMY_DATABASE_URI = "postgresql+psycopg2://superset_user:XXXXXXXXXX@127.0.0.1:5432/superset_demo"
 # ========================
 # Caching / Redis (optional for dev)

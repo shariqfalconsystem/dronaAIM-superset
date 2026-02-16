@@ -18,7 +18,6 @@ cd dronaAIM-superset
 
 ## Step 2: Create Virtual Environment
 ```bash
-cd superset
 python3 -m venv venv
 source venv/bin/activate
 ```
@@ -38,20 +37,21 @@ SQLALCHEMY_DATABASE_URI = "postgresql+psycopg2://testuser:testpass@52.202.251.21
 ```
 *(Note: If you change the password on the database server, remember to update it here as well.)*
 
-## Step 5: Initialize Superset Metadata Database
+## Step 5: Initialize Superset (Consolidated)
+Run these commands together to set up the database and your admin account:
+
 ```bash
+# 1. Set environment variables
 export FLASK_APP=superset
-export SUPERSET_CONFIG_PATH=/home/sabya/work/dronaAIM-superset/superset/superset_config.py
+export SUPERSET_CONFIG_PATH=$(pwd)/superset/superset_config.py
+
+# 2. Upgrade the database schema
 superset db upgrade
-```
 
-## Step 6: Create Admin User
-```bash
+# 3. Create your Admin user
 superset fab create-admin
-```
 
-## Step 7: Initialize Superset
-```bash
+# 4. Finalize permissions and roles
 superset init
 ```
 
@@ -63,20 +63,15 @@ npm run build
 cd ../..
 ```
 
-## Step 9: Run Superset Server
-Run these commands from the root directory of the project (`/home/sabya/work/dronaAIM-superset`):
-
+## Step 8: Run Superset Server
 ```bash
-# Ensure you are in the root directory
-cd /home/sabya/work/dronaAIM-superset
+# 1. Activate the environment
+source venv/bin/activate
 
-# Activate the virtual environment
-source superset/venv/bin/activate
+# 2. Set the config path
+export SUPERSET_CONFIG_PATH=$(pwd)/superset/superset_config.py
 
-# Set the configuration path (using the absolute path)
-export SUPERSET_CONFIG_PATH=/home/sabya/work/dronaAIM-superset/superset/superset_config.py
-
-# Start the server
+# 3. Start the server
 superset run -p 8088 --with-threads --reload --debugger
 ```
 
@@ -104,7 +99,7 @@ If you just want to see the dashboard inside an iframe quickly (requires you to 
 2. Add `?standalone=true` to the URL.
 
 **The URL for both developers will be:**
-`http://localhost:8088/superset/dashboard/p/QoPYEggdL6O/?standalone=true`
+`http://localhost:8088/superset/dashboard/p/0GzpAVexdgo/?standalone=true`
 
 ### Method B: Production Embedding (SDK)
 To embed without requiring a login screen (using the "Guest Token" system we configured):
